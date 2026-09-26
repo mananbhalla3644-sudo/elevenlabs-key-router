@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#090b12" />
+    <meta
+      name="description"
+      content="Eleven KeyFlow — a local-first ElevenLabs API key router with automatic failover."
+    />
+    <title>Eleven KeyFlow — Local Key Router</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to dashboard</a>
+
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+    <div class="page-grid" aria-hidden="true"></div>
+
+    <header class="site-header shell">
+      <a class="brand" href="#top" aria-label="Eleven KeyFlow home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" role="img">
+            <path d="M16 2.75 27.1 9.4v13.2L16 29.25 4.9 22.6V9.4L16 2.75Z" />
+            <path d="m19.9 10.2-2.2 2.2m0 0 2.4 2.4-2.2 2.2m2.2-2.2h-7.2" />
+            <circle cx="11.4" cy="10.4" r="1.55" />
+          </svg>
+        </span>
+        <span class="brand-copy">
+          <strong>Eleven <span>KeyFlow</span></strong>
+          <small>Local key router</small>
+        </span>
+      </a>
+
+      <div class="header-status" aria-label="Router connection status">
+        <div class="connection-pill checking" id="connectionPill" role="status" aria-live="polite">
+          <span class="connection-dot" aria-hidden="true"></span>
+          <span id="connectionText">Checking router</span>
+        </div>
+        <div class="local-badge" title="All requests stay on this device">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3 5 6v5c0 4.55 2.94 8.73 7 10 4.06-1.27 7-5.45 7-10V6l-7-3Z" />
+            <path d="m9.3 12 1.8 1.8 3.8-4" />
+          </svg>
+          <span>Local only</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="shell" id="main-content">
+      <section class="hero" id="top" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <div class="eyebrow">
+            <span class="eyebrow-dot" aria-hidden="true"></span>
+            Failover automation
+          </div>
+          <h1 id="page-title">One pool. <span>Zero dead ends.</span></h1>
+          <p>
+            Route every request through a resilient pool of ElevenLabs keys. When a key
+            reaches its limit, KeyFlow cools it down and keeps your request moving.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#speech-studio">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 4v16l14-8L5 4Z" />
+              </svg>
+              Open speech studio
+            </a>
+            <a class="button button-ghost" href="#voice-changer">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" />
+              </svg>
+              Try voice changer
+            </a>
+            <a class="button button-ghost" href="#key-pool">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Manage keys
+            </a>
+          </div>
+        </div>
+
+        <div class="route-card" aria-label="Automatic failover route">
+          <div class="route-card-head">
+            <div>
+              <span class="route-kicker">Routing policy</span>
+              <strong>Automatic failover</strong>
+            </div>
+            <span class="live-chip"><i aria-hidden="true"></i> Live</span>
+          </div>
+
+          <ol class="route-steps">
+            <li>
+              <span class="step-icon step-icon-coral" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 3v4m0 10v4M3 12h4m10 0h4" /><circle cx="12" cy="12" r="4" /></svg>
+              </span>
+              <span><small>01</small><strong>Watch limits</strong></span>
+            </li>
+            <li>
+              <span class="step-icon step-icon-violet" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /><path d="M12 8v4l2.5 2.5" /></svg>
+              </span>
+              <span><small>02</small><strong>Cool down</strong></span>
+            </li>
+            <li>
+              <span class="step-icon step-icon-mint" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></svg>
+              </span>
+              <span><small>03</small><strong>Route next</strong></span>
+            </li>
+          </ol>
+
+          <div class="route-footer">
+            <div class="mini-avatars" aria-hidden="true">
+              <span>01</span><span>02</span><span>03</span><span>04</span>
+            </div>
+            <p><strong id="heroAvailableCount">0 keys</strong> ready to route</p>
+            <span class="capacity-number" id="heroCapacity">0 / 10</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats-grid" aria-label="Key pool statistics">
+        <article class="stat-card">
+          <div class="stat-icon stat-icon-mint" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.55 2.94 8.73 7 10 4.06-1.27 7-5.45 7-10V6l-7-3Z" /><path d="m9.3 12 1.8 1.8 3.8-4" /></svg>
+          </div>
+          <div class="stat-copy">
+            <span>Keys ready</span>
+            <strong id="statReady">0</strong>
+            <small id="statReadyDetail">of 0 in pool</small>
+          </div>
+          <span class="stat-trend positive" id="statReadyTrend">Local</span>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-icon stat-icon-blue" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 18V9m5 9V5m5 13v-7m5 7V3" /></svg>
+          </div>
+          <div class="stat-copy">
+            <span>Requests routed</span>
+            <strong id="statRequests">0</strong>
+            <small id="statRequestsDetail">Across all keys</small>
+          </div>
+          <span class="stat-trend" id="statRequestsTrend">Live</span>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-icon stat-icon-violet" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M5 19 19 5M7 7h.01M17 17h.01" /><circle cx="7" cy="7" r="2" /><circle cx="17" cy="17" r="2" /></svg>
+          </div>
+          <div class="stat-copy">
+            <span>Success rate</span>
+            <strong id="statSuccess">0%</strong>
+            <small id="statSuccessDetail">0 successful calls</small>
+          </div>
+          <span class="stat-trend positive" id="statSuccessTrend">Healthy</span>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-icon stat-icon-coral" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /><path d="M12 8v4l2.5 2.5" /></svg>
+          </div>
+          <div class="stat-copy">
+            <span>In cooldown</span>
+            <strong id="statCooldown">0</strong>
+            <small id="statCooldownDetail">No keys resting</small>
+          </div>
+          <span class="stat-trend warning" id="statCooldownTrend">Clear</span>
+        </article>
+      </section>
+
+      <div class="workspace-grid">
+        <section class="panel key-panel" id="key-pool" aria-labelledby="key-pool-title">
+          <header class="panel-header">
+            <div class="panel-title-group">
+              <span class="section-number" aria-hidden="true">01</span>
+              <div>
+                <div class="title-line">
+                  <h2 id="key-pool-title">API key pool</h2>
+                  <span class="count-badge" id="poolCount">0 / 10</span>
+                </div>
+                <p>Add up to ten keys for automatic, ordered routing.</p>
+              </div>
+            </div>
+            <button class="icon-button labeled-button" id="resetKeysButton" type="button" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 5.66M20 4v7h-7" /></svg>
+              <span>Reset cooldowns</span>
+            </button>
+          </header>
+
+          <div class="security-note">
+            <span class="security-note-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v2" /></svg>
+            </span>
+            <p>
+              <strong>Your keys stay under your control.</strong>
+              Keys are sent only to this local server, never returned by the API, and kept
+              in server memory unless supplied through environment variables.
+            </p>
+            <span class="never-returned">Never returned</span>
+          </div>
+
+          <form class="key-form" id="keyForm" novalidate>
+            <div class="field-label-row">
+              <label for="keyInput">Add API keys</label>
+              <span>One key per line</span>
+            </div>
+            <div class="key-input-wrap">
+              <textarea
+                id="keyInput"
+                name="keys"
+                rows="3"
+                spellcheck="false"
+                autocomplete="off"
+                autocapitalize="off"
+                placeholder="Paste one or more keys, one per line…"
+                aria-describedby="keyInputHelp keyFeedback"
+              ></textarea>
+              <div class="key-input-footer">
+                <span id="keyInputHelp">Paste-lines supported</span>
+                <span id="parsedKeyCount">0 detected</span>
+              </div>
+            </div>
+            <p class="form-feedback" id="keyFeedback" role="status" aria-live="polite"></p>
+            <div class="key-form-actions">
+              <div class="capacity" aria-label="Key pool capacity">
+                <div class="capacity-track" id="capacityTrack" role="progressbar" aria-label="Key pool capacity" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0"><span id="capacityBar"></span></div>
+                <span id="capacityText">0 of 10 slots used</span>
+              </div>
+              <div class="button-group">
+                <button class="button button-danger-ghost" id="clearKeysButton" type="button" disabled>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5" /></svg>
+                  Clear pool
+                </button>
+                <button class="button button-primary append-button" id="addKeysButton" type="submit">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                  <span>Append keys</span>
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <div class="key-list-heading">
+            <h3>Key status</h3>
+            <div class="sync-status">
+              <span id="syncDot" aria-hidden="true"></span>
+              <span id="lastSync">Waiting for sync</span>
+              <button class="mini-icon-button" id="refreshKeysButton" type="button" aria-label="Refresh key status" title="Refresh key status">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 5.66M20 4v7h-7" /></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="key-grid" id="keyGrid" aria-busy="false">
+            <div class="key-empty-state">
+              <span class="empty-illustration" aria-hidden="true">
+                <svg viewBox="0 0 64 64"><rect x="13" y="25" width="38" height="27" rx="7" /><path d="M21 25v-6a11 11 0 0 1 22 0v6M32 36v7" /><circle cx="32" cy="33" r="2" /></svg>
+              </span>
+              <h3>Your key pool is empty</h3>
+              <p>Add a key above to start routing requests automatically.</p>
+            </div>
+          </div>
+        </section>
+
+        <aside class="panel activity-panel" aria-labelledby="activity-title">
+          <header class="panel-header compact">
+            <div class="panel-title-group">
+              <span class="section-number" aria-hidden="true">02</span>
+              <div>
+                <div class="title-line">
+                  <h2 id="activity-title">Live events</h2>
+                  <span class="live-chip"><i aria-hidden="true"></i> Live</span>
+                </div>
+                <p>Routing and key activity</p>
+              </div>
+            </div>
+            <button class="mini-icon-button clear-log" id="clearLogButton" type="button" aria-label="Clear event log" title="Clear event log">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7" /></svg>
+            </button>
+          </header>
+
+          <div class="event-summary" aria-hidden="true">
+            <div><span id="eventTotal">0</span><small>Events this session</small></div>
+            <div class="event-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+
+          <ol class="event-list" id="eventList" aria-live="polite" aria-relevant="additions"></ol>
+
+          <div class="activity-foot">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.55 2.94 8.73 7 10 4.06-1.27 7-5.45 7-10V6l-7-3Zm-3 9 2 2 4-4" /></svg>
+            <p><strong>Local-first by design</strong><br />No third-party analytics or assets.</p>
+          </div>
+        </aside>
+      </div>
+
+      <section class="panel speech-panel" id="speech-studio" aria-labelledby="speech-title">
+        <header class="panel-header speech-header">
+          <div class="panel-title-group">
+            <span class="section-number" aria-hidden="true">03</span>
+            <div>
+              <div class="title-line">
+                <h2 id="speech-title">Speech studio</h2>
+                <span class="failover-badge">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.55 2.94 8.73 7 10 4.06-1.27 7-5.45 7-10V6l-7-3Z" /><path d="m9.3 12 1.8 1.8 3.8-4" /></svg>
+                  Failover enabled
+                </span>
+              </div>
+              <p>Generate speech and watch the router handle rate limits for you.</p>
+            </div>
+          </div>
+          <div class="studio-status">
+            <span class="pulse-ring" aria-hidden="true"></span>
+            <span id="studioStatusText">Ready to stream</span>
+          </div>
+        </header>
+
+        <form class="speech-form" id="ttsForm" novalidate>
+          <div class="tts-main-grid">
+            <div class="text-field-group">
+              <div class="field-label-row">
+                <label for="ttsText">Text to speak</label>
+                <span id="ttsCharacterCount">0 characters</span>
+              </div>
+              <div class="tts-textarea-wrap">
+                <textarea
+                  id="ttsText"
+                  name="text"
+                  rows="7"
+                  maxlength="10000"
+                  required
+                  placeholder="Type or paste the text you want to hear…"
+                  aria-describedby="ttsTextHelp ttsFeedback"
+                ></textarea>
+                <div class="textarea-corner" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M5 4v16l14-8L5 4Z" /></svg>
+                </div>
+              </div>
+              <p class="field-help" id="ttsTextHelp">Up to 10,000 characters for Multilingual v2.</p>
+            </div>
+
+            <div class="tts-controls">
+              <div class="field-group">
+                <label for="voiceId">
+                  Voice ID
+                  <span class="label-hint">ElevenLabs voice</span>
+                </label>
+                <div class="input-with-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 0v5m-3 0h6" /></svg>
+                  <input
+                    id="voiceId"
+                    name="voiceId"
+                    type="text"
+                    value="JBFqnCBsd6RMkjVDRZzb"
+                    placeholder="Enter a voice ID"
+                    spellcheck="false"
+                    autocomplete="off"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label for="modelId">Model</label>
+                <div class="select-wrap">
+                  <select id="modelId" name="modelId">
+                    <option value="eleven_multilingual_v2">Multilingual v2 · stable</option>
+                    <option value="eleven_flash_v2_5">Flash v2.5 · fastest</option>
+                    <option value="eleven_v3">Eleven v3 · expressive</option>
+                  </select>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4" /></svg>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label for="outputFormat">Output format</label>
+                <div class="select-wrap">
+                  <select id="outputFormat" name="outputFormat">
+                    <option value="mp3_44100_128">MP3 · 44.1 kHz · 128 kbps</option>
+                    <option value="mp3_44100_192">MP3 · 44.1 kHz · 192 kbps</option>
+                    <option value="mp3_22050_32">MP3 · 22.05 kHz · 32 kbps</option>
+                  </select>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4" /></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="generate-row">
+            <div class="generation-status" id="ttsFeedback" role="status" aria-live="polite">
+              <span class="status-icon idle" aria-hidden="true"><i></i></span>
+              <span><strong>Ready</strong><small>The server streams the response, then adds it to the player.</small></span>
+            </div>
+            <button class="button button-generate" id="generateButton" type="submit">
+              <span class="generate-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M5 4v16l14-8L5 4Z" /></svg>
+              </span>
+              <span id="generateButtonText">Generate speech</span>
+              <svg class="button-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>
+            </button>
+          </div>
+
+          <div class="download-progress" id="downloadProgress" hidden>
+            <div><span id="downloadProgressLabel">Receiving audio</span><span id="downloadProgressValue">0%</span></div>
+            <progress id="audioProgress" max="100" value="0">0%</progress>
+          </div>
+
+          <div class="audio-result" id="audioResult" hidden>
+            <div class="result-label">
+              <span class="result-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M9 18V5l10-2v13M9 9l10-2" /><circle cx="6" cy="18" r="3" /><circle cx="16" cy="16" r="3" /></svg>
+              </span>
+              <span><strong>Your audio is ready</strong><small id="audioResultMeta">Generated just now</small></span>
+            </div>
+            <div class="player-wrap">
+              <audio id="audioPlayer" controls preload="metadata">Your browser does not support audio playback.</audio>
+            </div>
+            <a class="button button-secondary download-button" id="downloadAudio" href="#" download="keyflow-speech.mp3">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 20h14" /></svg>
+              Download audio
+            </a>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel voice-changer-panel" id="voice-changer" aria-labelledby="voice-changer-title">
+        <header class="panel-header voice-changer-header">
+          <div class="panel-title-group">
+            <span class="section-number" aria-hidden="true">04</span>
+            <div>
+              <div class="title-line">
+                <h2 id="voice-changer-title">Voice changer</h2>
+                <span class="failover-badge voice-changer-badge">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" /></svg>
+                  File upload
+                </span>
+              </div>
+              <p>Upload a recording, choose a target voice, and convert it without leaving KeyFlow.</p>
+            </div>
+          </div>
+          <div class="studio-status" id="voiceChangerStudioStatus">
+            <span class="pulse-ring" aria-hidden="true"></span>
+            <span id="voiceChangerStatusText">Ready to convert</span>
+          </div>
+        </header>
+
+        <form class="voice-changer-form" id="voiceChangerForm" novalidate>
+          <div class="voice-changer-layout">
+            <div class="upload-column">
+              <div class="field-label-row">
+                <label for="sourceAudio">Source audio</label>
+                <span id="sourceAudioSize">No file selected</span>
+              </div>
+              <label class="upload-dropzone" id="voiceUploadDropzone" for="sourceAudio">
+                <input
+                  id="sourceAudio"
+                  name="audio"
+                  type="file"
+                  accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac,.aac,.webm"
+                  aria-describedby="sourceAudioHelp"
+                />
+                <span class="upload-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0 4 4m-4-4L8 8M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" /></svg>
+                </span>
+                <span class="upload-copy">
+                  <strong id="sourceAudioName">Choose an audio file</strong>
+                  <small>Drop a recording here or browse your device</small>
+                </span>
+                <span class="upload-cta" aria-hidden="true">Browse files</span>
+              </label>
+              <p class="field-help" id="sourceAudioHelp">
+                Encoded audio up to 50 MB · one clip per conversion · keep clips under five minutes.
+              </p>
+            </div>
+
+            <div class="voice-controls">
+              <div class="field-group">
+                <label for="voiceChangerVoiceId">
+                  Target voice ID
+                  <span class="label-hint">ElevenLabs voice</span>
+                </label>
+                <div class="input-with-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 0v5m-3 0h6" /></svg>
+                  <input
+                    id="voiceChangerVoiceId"
+                    name="voiceId"
+                    type="text"
+                    value="JBFqnCBsd6RMkjVDRZzb"
+                    placeholder="Enter a target voice ID"
+                    spellcheck="false"
+                    autocomplete="off"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label for="voiceChangerModelId">Conversion model</label>
+                <div class="select-wrap">
+                  <select id="voiceChangerModelId" name="modelId">
+                    <option value="eleven_multilingual_sts_v2">Multilingual v2 · recommended</option>
+                    <option value="eleven_english_sts_v2">English v2 · English audio</option>
+                  </select>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4" /></svg>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label for="voiceChangerOutputFormat">Output format</label>
+                <div class="select-wrap">
+                  <select id="voiceChangerOutputFormat" name="outputFormat">
+                    <option value="mp3_44100_128">MP3 · 44.1 kHz · 128 kbps</option>
+                    <option value="mp3_44100_192">MP3 · 44.1 kHz · 192 kbps</option>
+                    <option value="mp3_22050_32">MP3 · 22.05 kHz · 32 kbps</option>
+                  </select>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4" /></svg>
+                </div>
+              </div>
+
+              <label class="checkbox-row" for="removeBackgroundNoise">
+                <input id="removeBackgroundNoise" name="removeBackgroundNoise" type="checkbox" />
+                <span>
+                  <strong>Remove background noise</strong>
+                  <small>Use ElevenLabs audio isolation before conversion.</small>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="generate-row voice-generate-row">
+            <div class="generation-status" id="voiceChangerFeedback" role="status" aria-live="polite">
+              <span class="status-icon idle" aria-hidden="true"><i></i></span>
+              <span><strong>Ready</strong><small>Select an audio file to start a conversion.</small></span>
+            </div>
+            <button class="button button-generate" id="convertVoiceButton" type="submit">
+              <span class="generate-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M5 4v16l14-8L5 4Z" /></svg>
+              </span>
+              <span id="convertVoiceButtonText">Convert voice</span>
+              <svg class="button-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>
+            </button>
+          </div>
+
+          <div class="download-progress voice-progress" id="voiceChangerProgress" hidden>
+            <div><span id="voiceChangerProgressLabel">Receiving converted audio</span><span id="voiceChangerProgressValue">Live</span></div>
+            <progress id="voiceChangerAudioProgress" max="100" value="0" aria-label="Voice conversion progress">0%</progress>
+          </div>
+
+          <div class="audio-result voice-audio-result" id="voiceChangerResult" hidden>
+            <div class="result-label">
+              <span class="result-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M9 18V5l10-2v13M9 9l10-2" /><circle cx="6" cy="18" r="3" /><circle cx="16" cy="16" r="3" /></svg>
+              </span>
+              <span><strong>Converted audio is ready</strong><small id="voiceChangerResultMeta">Converted just now</small></span>
+            </div>
+            <div class="player-wrap">
+              <audio id="voiceChangerPlayer" controls preload="metadata" aria-label="Converted voice audio">Your browser does not support audio playback.</audio>
+            </div>
+            <a class="button button-secondary download-button" id="downloadConvertedAudio" href="#" download="keyflow-voice-changer.mp3">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 20h14" /></svg>
+              Download converted audio
+            </a>
+          </div>
+        </form>
+      </section>
+
+      <footer class="site-footer">
+        <div>
+          <span class="footer-mark" aria-hidden="true"></span>
+          <strong>Eleven KeyFlow</strong>
+          <span>Private by default. Powerful by design.</span>
+        </div>
+        <p>All requests are handled by your local server.</p>
+      </footer>
+    </main>
+
+    <dialog class="modal auth-modal" id="authDialog" aria-labelledby="authTitle" aria-describedby="authDescription">
+      <form id="authForm" novalidate>
+        <div class="modal-icon auth-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v2" /></svg>
+        </div>
+        <div class="modal-copy">
+          <span class="modal-kicker">Protected router</span>
+          <h2 id="authTitle">Unlock KeyFlow</h2>
+          <p id="authDescription">This server requires an access token before it can manage keys or generate speech.</p>
+        </div>
+        <div class="field-group modal-field">
+          <label for="authToken">Access token</label>
+          <div class="input-with-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 0v5m-3 0h6" /></svg>
+            <input
+              id="authToken"
+              name="token"
+              type="password"
+              placeholder="Enter server token"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+              required
+            />
+          </div>
+          <p class="field-error" id="authError" role="alert"></p>
+        </div>
+        <div class="token-note">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v5m0-8h.01" /></svg>
+          The token is kept in <strong>sessionStorage</strong> only and is cleared when this browser tab closes.
+        </div>
+        <div class="modal-actions">
+          <button class="button button-ghost" id="authCancelButton" type="button">Not now</button>
+          <button class="button button-primary" id="unlockButton" type="submit">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10V7a4 4 0 0 1 8 0v3" /><rect x="5" y="10" width="14" height="10" rx="2" /></svg>
+            Unlock router
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="modal confirm-modal" id="clearDialog" aria-labelledby="clearTitle" aria-describedby="clearDescription">
+      <form id="clearForm" novalidate>
+        <div class="modal-icon danger-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5" /></svg>
+        </div>
+        <div class="modal-copy">
+          <span class="modal-kicker danger-kicker">Destructive action</span>
+          <h2 id="clearTitle">Clear the key pool?</h2>
+          <p id="clearDescription">This removes every key currently held in server memory, including environment-provided keys. Environment keys are restored when the server restarts.</p>
+        </div>
+        <div class="modal-actions stacked-mobile">
+          <button class="button button-ghost" id="clearCancelButton" type="button">Keep keys</button>
+          <button class="button button-danger" id="confirmClearButton" type="submit">Clear all keys</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast-region" id="toastRegion" role="status" aria-live="polite" aria-atomic="true"></div>
+  </body>
+</html>

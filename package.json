@@ -1,0 +1,15 @@
+{
+  "name": "elevenlabs-key-router",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dependency-free local ElevenLabs key router",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED"
+}

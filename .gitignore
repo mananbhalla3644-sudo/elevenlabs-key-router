@@ -1,0 +1,11 @@
+node_modules/
+
+# Secrets - the router stores real keys locally
+.env
+.env.*
+!.env.example
+
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
